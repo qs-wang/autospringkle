@@ -5,9 +5,7 @@
 //10 minutes timer
 unsigned long waterPeriod = 10 * 60UL * 1000;
 Neotimer waterTimer = Neotimer(waterPeriod);
-unsigned long lockerPeriod = 6 * 60 * 60UL * 1000;
-Neotimer lockerTimer = Neotimer(lockerPeriod);
-//Neotimer lockerTimer = Neotimer(30*1000);
+Neotimer lockerTimer = Neotimer(30*1000);
 
 int waterPin = 7;
 int lockerPin = 8;
@@ -21,8 +19,8 @@ RCSwitch signalReciever = RCSwitch();
 
 int waterOn = 1111;
 int waterOff = 9999;
-int lockerOn = 2222;
-int lockerOff = 8888;
+int lockerOn = 2200;
+int lockerOff = 8800;
 int dogOn = 3333;
 int dogOff = 7777;
 
@@ -55,7 +53,6 @@ void checkTimer() {
   if (lockerTimer.done()) {
     digitalWrite(lockerPin, HIGH);
     Serial.println("locker off");
-    lockerTimer = Neotimer(lockerPeriod);
   }
 }
 
@@ -79,19 +76,33 @@ void checkSprinkler(int value) {
 }
 
 void checkLocker(int value) {
-  if (value == lockerOff) {
+  int code = value;
+  int hour = code % 100;
+  code -= hour;
+    
+  if (code == lockerOff) {
     //switch relay off
     digitalWrite(lockerPin, HIGH);
     lockerTimer.stop();
+
     Serial.println("Locker timer stop");
     delay(3000);
 
   }
-  if (value == lockerOn )  {
+  if (code == lockerOn )  {
+    if(hour>0){
+      unsigned long lockerPeriod = hour * 60 * 60UL * 1000;
+      lockerTimer = Neotimer(lockerPeriod);
+    }else{
+      //30 seconds
+      lockerTimer =  Neotimer(30*1000);
+    }
+    
     //switch relay on
     digitalWrite(lockerPin, LOW);
     lockerTimer.start();
     Serial.println("Locker on");
+    Serial.println(hour);
     delay(3000);
   }
 }
@@ -104,7 +115,7 @@ void checkDog(int value) {
     return;
   }
   
-  if (digitalRead(capteur_D) == LOW) {
+  if (digitalRead(capteur_D) == HIGH) {
     Serial.println("Digital value : wet");
     digitalWrite(dogPin, LOW);
     delay(1000);
@@ -116,7 +127,6 @@ void checkDog(int value) {
 
 }
 void loop() {
-
   checkTimer();
   int value = -1;
 
