@@ -19,8 +19,8 @@ RCSwitch signalReciever = RCSwitch();
 
 int waterOn = 1111;
 int waterOff = 9999;
-int lockerOn = 2200;
-int lockerOff = 8800;
+int lockerOn = 22000;
+int lockerOff = 88000;
 int dogOn = 3333;
 int dogOff = 7777;
 
@@ -77,8 +77,10 @@ void checkSprinkler(int value) {
 
 void checkLocker(int value) {
   int code = value;
-  int hour = code % 100;
+  float hour = code % 1000;
   code -= hour;
+
+  hour = hour/10;
     
   if (code == lockerOff) {
     //switch relay off
